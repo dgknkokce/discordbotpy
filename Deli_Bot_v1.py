@@ -1,5 +1,4 @@
 import discord
-import random
 import os
 import youtube_dl
 import shutil
@@ -218,8 +217,11 @@ async def play(ctx, url: str):
     voice.source = discord.PCMVolumeTransformer(voice.source)
     voice.source.volume = 0.07
 
-    new_name = name.rsplit("-", 2)
-    await ctx.send(f"Playing {new_name[0]}")
+    try:
+        new_name = name.rsplit("-", 2)
+        await ctx.send(f"Playing {new_name[0]}")
+    except:
+        await ctx.send(f"Playing song.")
     print("playing.\n")
 
 
@@ -257,13 +259,17 @@ async def stop(ctx):
 
     queues.clear()
 
+    queue_infile = os.path.isdir("./Queue")
+    if queue_infile is True:
+        shutil.rmtree("./Queue")
+
     if voice and voice.is_playing():
         print("Music stopped.")
         voice.stop()
         await ctx.send("Music stopped.")
     else:
         print("No music playing, failed to stop")
-        await ctx.send("No music playing, failed to stop")
+        await ctx.send("No music playing, failed to stop.")
 
 
 queues = {}
@@ -301,10 +307,23 @@ async def queue(ctx, url: str):
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         print("Downloading audio now.\n")
         ydl.download([url])
-    await ctx.send("Adding song " + str(q_num) + " to the queue")
+    await ctx.send("Adding song " + str(q_num) + " to the queue.")
     print("Song added to queue.\n")
 
 
+@bot.command(aliases=["n"])
+async def next(ctx):
+    voice = get(bot.voice_clients, guild=ctx.guild)
+
+
+
+    if voice and voice.is_playing():
+        print("Playing next song.")
+        voice.stop()
+        await ctx.send("Next song.")
+    else:
+        print("No music playing, failed to play next song")
+        await ctx.send("No music playing failed.")
 
 
 # handles all commands.
